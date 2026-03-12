@@ -2,7 +2,7 @@
 
 # 🔬 Automated Dataset Analyzer
 
-### *A Mini Automated Data Scientist — built entirely in Python*
+### *A Mini Automated Data Scientist — two ways to run, one shared engine*
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![pandas](https://img.shields.io/badge/pandas-Data%20Handling-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org)
@@ -19,39 +19,49 @@
 ![Report Preview](https://img.shields.io/badge/Report-Auto%20Generated%20HTML-6C8EF5?style=flat-square)
 ![Charts](https://img.shields.io/badge/Charts-Per--Feature%20Individual-52C17E?style=flat-square)
 ![ML](https://img.shields.io/badge/ML-Auto%20Task%20Detection-F4845F?style=flat-square)
+![Web App](https://img.shields.io/badge/Web%20App-Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
+![CLI](https://img.shields.io/badge/CLI-analyze%20dataset.csv-2D3250?style=flat-square&logo=gnubash&logoColor=white)
 
 </div>
 
 ---
 
-## What Is This?
+## 🌟 What Is This?
 
-This project is a **fully automated exploratory data analysis (EDA) pipeline** that works on any CSV dataset. You run one command, and it handles everything:
+This project is a **fully automated exploratory data analysis (EDA) pipeline** that works on any CSV dataset. It comes with **two completely independent entry points** that share the same analysis engine under the hood:
 
-- Loads and validates your data
+| | Entry Point | Use Case |
+|---|---|---|
+| 🌐 **Web App** | `streamlit run app.py` | Browser UI, drag & drop upload, live link to share |
+| 💻 **CLI Tool** | `analyze dataset.csv` | Terminal power-user, scriptable, runs from anywhere |
+
+Both produce the same analysis. Neither depends on the other. You can use one, the other, or both.
+
+Drop in any CSV and it handles everything automatically:
+
+- Loads and validates your data (with encoding fallback)
 - Runs comprehensive quality checks
 - Generates full-size, per-feature visualizations
 - Auto-detects and trains a machine learning model
 - Packages everything into a **beautiful, self-contained HTML report**
-- Opens that report **automatically in your browser**
 
 No Jupyter notebooks. No manual configuration. No boilerplate. Just results.
 
 ---
 
-## Features
+## ✨ Features
 
-### Automated EDA
+### 📊 Automated EDA
 - **Dataset overview** — shape, dtypes, memory usage, column type breakdown
 - **Descriptive statistics** — count, mean, std, min/max, quartiles for every numeric column
 - **Smart column detection** — automatically identifies numeric, categorical, and datetime columns
 
-### Data Quality Diagnostics
+### 🔍 Data Quality Diagnostics
 - **Missing value analysis** — per-column count, percentage, and severity rating (Low / Medium / High)
 - **Duplicate detection** — flags exact duplicate rows with count and percentage
 - **Outlier detection** — IQR method applied to every numeric column, with computed bounds
 
-### Visualizations
+### 📈 Visualizations
 - **Per-feature distribution histograms** — one full-size chart per numeric column with mean & median reference lines
 - **Interactive tabbed viewer** — switch between features with a single click in the report
 - **Correlation heatmap** — lower-triangle seaborn heatmap with diverging palette
@@ -59,7 +69,7 @@ No Jupyter notebooks. No manual configuration. No boilerplate. Just results.
 - **Missing values chart** — horizontal bar chart sorted by missingness
 - **Outlier chart** — per-column outlier percentage visualization
 
-### Machine Learning Insights
+### 🤖 Machine Learning Insights
 - **Auto task detection** — classifies the problem as classification or regression based on target cardinality
 - **Auto target detection** — detects target column by name (`target`, `label`, `class`, `y`) or falls back to last column
 - **Random Forest model** — trains `RandomForestClassifier` or `RandomForestRegressor` automatically
@@ -69,11 +79,11 @@ No Jupyter notebooks. No manual configuration. No boilerplate. Just results.
 - **Feature importance chart** — ranked bar chart of top 15 features
 - **Feature importance table** — with visual bar indicators per feature
 
-### Auto-Generated Insights
+### 💡 Auto-Generated Insights
 - Natural-language bullet points summarizing key findings
 - Covers missing data, duplicates, outliers, correlations, and ML results
 
-### Report & UX
+### 🌐 Report & UX
 - **Single self-contained HTML file** — all charts embedded as base64, no external dependencies
 - **Auto browser launch** — report opens immediately after generation
 - **Per-dataset output folders** — `reports/<dataset_name>/` so multiple runs never overwrite each other
@@ -82,101 +92,112 @@ No Jupyter notebooks. No manual configuration. No boilerplate. Just results.
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
-There are **two ways** to use this tool — a hosted web app and a local CLI.
+> **Both entry points use the same engine. Pick whichever suits you — or use both.**
 
 ---
 
-### Option A — Web App (Recommended for sharing)
+### 🌐 Option A — Web App
 
-**[ Try it live on Streamlit Cloud](https://your-app.streamlit.app)**  
-No installation. Upload your CSV, get your report instantly.
+**[➡️ Try it live](https://your-app.streamlit.app)** — no installation needed.
 
-Or run locally:
+Or run it locally:
+
 ```bash
 git clone https://github.com/nirupam-das/dataset-analyzer.git
 cd dataset-analyzer
 pip install -r requirements.txt
 streamlit run app.py
 ```
-Then open **http://localhost:8501** in your browser.
+
+Open **http://localhost:8501** → upload your CSV → full analysis in seconds.
 
 ---
 
-### Option B — CLI Tool (Install once, run anywhere)
+### 💻 Option B — CLI Tool
 
 ```bash
 git clone https://github.com/nirupam-das/dataset-analyzer.git
 cd dataset-analyzer
-pip install -e .
+pip install -e .        # registers the `analyze` command globally — one time only
 ```
 
-This registers the `analyze` command globally. Then from anywhere:
+Then from **anywhere on your system**, forever:
 
 ```bash
-analyze path/to/your/dataset.csv
+analyze ~/Downloads/titanic.csv
 ```
 
-Your browser opens with the full report automatically.
+Browser opens with the full report automatically. The `reports/` folder is created wherever you run the command from.
 
 ---
 
 ## ⚙️ CLI Usage & Options
 
+> The CLI (`main.py` / `analyze` command) is **fully independent** from the web app.
+> Changing or running `app.py` has zero effect on it, and vice versa.
+
 ```bash
 analyze <csv_file> [options]
 ```
 
-| Argument | Description | Example |
+| Flag | Description | Example |
 |---|---|---|
-| `csv_file` | Path to the input CSV *(required)* | `data.csv` |
-| `--target COL` | Specify the ML target column | `--target price` |
-| `--no-ml` | Skip the machine learning step | `--no-ml` |
+| *(none)* | Full analysis + ML + auto-open browser | `analyze data.csv` |
+| `--target COL` | Specify the ML target column manually | `--target price` |
+| `--no-ml` | Skip ML entirely — faster EDA-only run | `--no-ml` |
 | `--no-launch` | Don't auto-open the browser | `--no-launch` |
 
 ### Examples
 
 ```bash
-# Full analysis — run from anywhere on your system
+# Full analysis — auto-detects ML target, opens browser when done
 analyze ~/Downloads/titanic.csv
 
-# Specify your target column explicitly
+# Explicitly set the target column for ML
 analyze ~/datasets/house_prices.csv --target SalePrice
 
-# EDA only, no ML (faster)
+# EDA only, skip ML (much faster on large datasets)
 analyze pokemon.csv --no-ml
+
+# Useful in scripts or remote servers — no browser pop-up
+analyze sales_data.csv --no-launch
 ```
 
 > **Where does the report go?**
-> A `reports/` folder is created in whichever directory you run the command from.
+> A `reports/<dataset_name>/` folder is created in whichever directory you run the command from — not inside the project folder.
 
 ---
 
 ## 🌐 Streamlit Web App
 
-The web app (`app.py`) gives the same analysis through a browser interface — perfect for sharing with non-technical users or showcasing on a resume.
+> The web app (`app.py`) is **fully independent** from the CLI.
+> It imports the same `src/` engine but has its own UI, caching, and session logic.
+> Running `app.py` does **not** affect `main.py` in any way.
 
 ```bash
 streamlit run app.py
+# → opens http://localhost:8501
 ```
 
 ### Web App Features
-- **Drag & drop CSV upload** — no file paths needed
-- **8 interactive tabs** — each section is a dedicated tab
-- **Dropdown feature selectors** — pick any column to inspect its chart
-- **Live ML training** — toggle on/off from the sidebar, specify target column
-- **One-click HTML download** — generates and downloads the full report
+- **Drag & drop CSV upload** — no file paths, no terminal
+- **8 interactive tabs** — Overview, Quality, Distributions, Correlations, Categorical, ML, Insights, Download
+- **Dropdown feature selectors** — pick any column to inspect its full-size chart
+- **ML gated behind a button** — click "Run ML Analysis" only when you want it
+- **Report gated behind a button** — click "Generate Report" to build and download
+- **`@st.cache_data` on all heavy ops** — switching tabs never re-runs the analysis
 
 ### Deploy to Streamlit Cloud (Free)
 1. Push this repo to GitHub
 2. Go to [share.streamlit.io](https://share.streamlit.io)
 3. Connect your repo → set **main file** to `app.py`
-4. Click Deploy — you get a public URL in ~2 minutes
+4. Click Deploy — public URL ready in ~2 minutes
 
 ---
 
-## How It Works
+## 🔄 How It Works
 
 ```
 CSV File
@@ -210,7 +231,7 @@ reports/<dataset>/dataset_report.html  ← opens in browser
 
 ---
 
-## Report Walkthrough
+## 📋 Report Walkthrough
 
 The generated HTML report has a **fixed sidebar navigation** with 7 sections:
 
@@ -228,7 +249,7 @@ The generated HTML report has a **fixed sidebar navigation** with 7 sections:
 
 ---
 
-## Project Structure
+## 🗂️ Project Structure
 
 ```
 dataset-analyzer/
@@ -265,7 +286,7 @@ dataset-analyzer/
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Library | Role |
 |---|---|
@@ -281,7 +302,7 @@ dataset-analyzer/
 
 ---
 
-## Supported Dataset Types
+## 🧩 Supported Dataset Types
 
 The analyzer handles a wide variety of CSV structures automatically:
 
@@ -294,7 +315,7 @@ The analyzer handles a wide variety of CSV structures automatically:
 
 ---
 
-## Sample Output Structure
+## 📁 Sample Output Structure
 
 After running `python main.py titanic.csv`, the project looks like:
 
@@ -318,14 +339,32 @@ dataset-analyzer/
 └── src/
     └── ...
 ```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Some ideas for extension:
+
+- [ ] Support for Excel (`.xlsx`) files
+- [ ] PDF export of the report
+- [ ] Time-series analysis module
+- [ ] More ML models (XGBoost, Logistic Regression comparison)
+- [ ] Dark mode toggle in the report
+- [ ] Streamlit file history (remember previously uploaded datasets)
+
 ---
 
 ## 👤 Author
 
 **Nirupam Das**
 
-Built as a demonstration of end-to-end Python engineering — combining data analysis, machine learning, visualization, templating, and CLI design into a single automated pipeline.
+Built as a demonstration of end-to-end Python engineering — combining data analysis, machine learning, visualization, templating, CLI tooling, and web deployment into a single project with two independent interfaces sharing one core engine.
 
 ---
+
+<div align="center">
+
+*If you found this useful, consider giving it a ⭐*
 
 </div>
