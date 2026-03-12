@@ -250,17 +250,17 @@ The generated HTML report has a **fixed sidebar navigation** with 7 sections:
 ---
 ## 📸 Screenshots
 
-### Dataset Overview
+### Webpage Overview (Before providing dataset)
 <p align="center">
   <img src="images/dataset_analyzer_web1.png" width="800">
 </p>
 
-### Missing Values Analysis
+### Dataset Overview (Initial Anlaysis)
 <p align="center">
   <img src="images/dataset_analyzer_web2.png" width="800">
 </p>
 
-### Correlation Heatmap
+### Data Quality
 <p align="center">
   <img src="images/dataset_analyzer_web3.png" width="800">
 </p>
@@ -270,22 +270,22 @@ The generated HTML report has a **fixed sidebar navigation** with 7 sections:
   <img src="images/dataset_analyzer_web4.png" width="800">
 </p>
 
-### Categorical Analysis
+### Correlation Heatmap
 <p align="center">
   <img src="images/dataset_analyzer_web5.png" width="800">
 </p>
 
-### Machine Learning Insights
+### Categorical Analysis of Selected Feature
 <p align="center">
   <img src="images/dataset_analyzer_web6.png" width="800">
 </p>
 
-### Feature Importance
+### Machine Learning Insights
 <p align="center">
   <img src="images/dataset_analyzer_web7.png" width="800">
 </p>
 
-### Generated HTML Report
+### Dataset Insights
 <p align="center">
   <img src="images/dataset_analyzer_web8.png" width="800">
 </p>
