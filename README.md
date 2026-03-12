@@ -339,20 +339,6 @@ dataset-analyzer/
 └── src/
     └── ...
 ```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Some ideas for extension:
-
-- [ ] Support for Excel (`.xlsx`) files
-- [ ] PDF export of the report
-- [ ] Time-series analysis module
-- [ ] More ML models (XGBoost, Logistic Regression comparison)
-- [ ] Dark mode toggle in the report
-- [ ] Streamlit file history (remember previously uploaded datasets)
-
 ---
 
 ## 👤 Author
@@ -360,11 +346,5 @@ Contributions are welcome! Some ideas for extension:
 **Nirupam Das**
 
 Built as a demonstration of end-to-end Python engineering — combining data analysis, machine learning, visualization, templating, CLI tooling, and web deployment into a single project with two independent interfaces sharing one core engine.
-
----
-
-<div align="center">
-
-*If you found this useful, consider giving it a ⭐*
 
 </div>
