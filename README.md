@@ -14,14 +14,6 @@
 
 [Features](#-features) · [Quick Start](#-quick-start) · [How It Works](#-how-it-works) · [Report Walkthrough](#-report-walkthrough) · [Project Structure](#-project-structure) · [Tech Stack](#-tech-stack)
 
----
-
-![Report Preview](https://img.shields.io/badge/Report-Auto%20Generated%20HTML-6C8EF5?style=flat-square)
-![Charts](https://img.shields.io/badge/Charts-Per--Feature%20Individual-52C17E?style=flat-square)
-![ML](https://img.shields.io/badge/ML-Auto%20Task%20Detection-F4845F?style=flat-square)
-![Web App](https://img.shields.io/badge/Web%20App-Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
-![CLI](https://img.shields.io/badge/CLI-analyze%20dataset.csv-2D3250?style=flat-square&logo=gnubash&logoColor=white)
-
 </div>
 
 ---
