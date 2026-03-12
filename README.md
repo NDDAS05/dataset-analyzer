@@ -248,6 +248,48 @@ The generated HTML report has a **fixed sidebar navigation** with 7 sections:
 > **Tabbed Viewers** — instead of cramped grids, Distributions and Categorical sections each have a tab bar. Click any column name to instantly view its full-size chart.
 
 ---
+## 📸 Screenshots
+
+### Dataset Overview
+<p align="center">
+  <img src="images/dataset_analyzer_web1.png" width="800">
+</p>
+
+### Missing Values Analysis
+<p align="center">
+  <img src="images/dataset_analyzer_web2.png" width="800">
+</p>
+
+### Correlation Heatmap
+<p align="center">
+  <img src="images/dataset_analyzer_web3.png" width="800">
+</p>
+
+### Feature Distributions
+<p align="center">
+  <img src="images/dataset_analyzer_web4.png" width="800">
+</p>
+
+### Categorical Analysis
+<p align="center">
+  <img src="images/dataset_analyzer_web5.png" width="800">
+</p>
+
+### Machine Learning Insights
+<p align="center">
+  <img src="images/dataset_analyzer_web6.png" width="800">
+</p>
+
+### Feature Importance
+<p align="center">
+  <img src="images/dataset_analyzer_web7.png" width="800">
+</p>
+
+### Generated HTML Report
+<p align="center">
+  <img src="images/dataset_analyzer_web8.png" width="800">
+</p>
+---
 
 ## 🗂️ Project Structure
 
