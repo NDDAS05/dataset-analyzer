@@ -1,4 +1,3 @@
 reports/
 src/__pycache__/
 *.pyc
-.streamlit/
