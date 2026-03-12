@@ -17,6 +17,9 @@
 </div>
 
 ---
+## 🔗 Live Deployment
+
+- 🌐 **Web App:** https://dataset-analyzer-mini.streamlit.app/
 
 ## 🌟 What Is This?
 
