@@ -25,7 +25,6 @@ from visualizer       import (generate_visualizations, plot_feature_importance,
 from ml_insights      import run_ml_analysis
 from report_generator import generate_report
 
-# ── Cached heavy functions ────────────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
 def cached_load(file_bytes: bytes, filename: str) -> pd.DataFrame:
     """Load and cache DataFrame — only re-runs when file actually changes."""
@@ -52,7 +51,7 @@ def cached_ml(file_bytes: bytes, target: str) -> dict:
     df = cached_load(file_bytes, "")
     return run_ml_analysis(df, target)
 
-# ── Page config ───────────────────────────────────────────────────────────────
+# Page config
 st.set_page_config(
     page_title  = "Dataset Analyzer · Nirupam Das",
     page_icon   = "🔬",
@@ -60,12 +59,11 @@ st.set_page_config(
     initial_sidebar_state = "expanded",
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;500;600;700&display=swap');
 
-/* ── Base & fonts ─────────────────────────────────────────── */
+
 html, body, [class*="css"],
 [data-testid="stAppViewContainer"],
 [data-testid="stMarkdownContainer"],
@@ -74,7 +72,6 @@ p, span, div, label, h1, h2, h3 {
     color: #2D3250;
 }
 
-/* ── App background ───────────────────────────────────────── */
 .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"],
@@ -82,12 +79,10 @@ p, span, div, label, h1, h2, h3 {
     background-color: #F4F6FF !important;
 }
 
-/* ── Hide Streamlit chrome ────────────────────────────────── */
 #MainMenu, footer, header { visibility: hidden; }
 [data-testid="stToolbar"]  { display: none; }
 [data-testid="stDecoration"]{ display: none; }
 
-/* ── Sidebar — no horizontal scroll ──────────────────────── */
 [data-testid="stSidebar"] {
     background-color: #FFFFFF !important;
     border-right: 1.5px solid #DDE3F7 !important;
@@ -101,9 +96,6 @@ p, span, div, label, h1, h2, h3 {
 }
 [data-testid="stSidebar"] * {
     font-family: 'Nunito Sans', sans-serif !important;
-    max-width: 100% !important;
-    word-break: break-word !important;
-    overflow-x: hidden !important;
     box-sizing: border-box !important;
 }
 /* Sidebar text inputs */
@@ -122,7 +114,6 @@ p, span, div, label, h1, h2, h3 {
 }
 [data-testid="stSidebar"] .stMarkdown p { color: #525B84 !important; }
 
-/* ── Streamlit native widgets — force readable text ───────── */
 /* All markdown text */
 .stMarkdown p, .stMarkdown span, .stMarkdown li { color: #2D3250 !important; }
 .stMarkdown h1, .stMarkdown h2, .stMarkdown h3  { color: #2D3250 !important; }
@@ -196,7 +187,6 @@ p, span, div, label, h1, h2, h3 {
 /* st.success / st.info / st.error */
 [data-testid="stAlert"] p { color: #2D3250 !important; }
 
-/* ── Custom component classes ─────────────────────────────── */
 .stat-card {
     background: #FFFFFF;
     border: 1.5px solid #DDE3F7;
@@ -275,7 +265,6 @@ p, span, div, label, h1, h2, h3 {
     font-weight: 700; display: inline-block; margin: 3px;
 }
 
-/* ── Mobile responsiveness ────────────────────────────────── */
 @media (max-width: 768px) {
     [data-testid="stSidebar"] { display: none !important; }
     [data-testid="block-container"] { padding: 1rem !important; }
@@ -294,7 +283,6 @@ p, span, div, label, h1, h2, h3 {
 """, unsafe_allow_html=True)
 
 
-# ═════════════════════════════════════════════════════════════════════════════
 # Helpers
 # ═════════════════════════════════════════════════════════════════════════════
 
@@ -331,57 +319,48 @@ def show_img(b64: str, caption: str = ""):
         )
 
 
-# ═════════════════════════════════════════════════════════════════════════════
 # Sidebar
 # ═════════════════════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    st.markdown("""
-    <div style="padding:8px 0 20px;">
-      <div style="background:linear-gradient(135deg,#6C8EF5,#B97FF5);
-                  width:44px;height:44px;border-radius:14px;
-                  display:flex;align-items:center;justify-content:center;
-                  font-size:22px;margin-bottom:10px;
-                  box-shadow:0 4px 12px rgba(108,142,245,0.30);">🔬</div>
-      <div style="font-size:16px;font-weight:900;color:#2D3250;">Dataset Analyzer</div>
-      <div style="font-size:11px;color:#8A93B2;font-weight:600;">by Nirupam Das</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        '<div style="display:flex;align-items:center;gap:12px;padding:4px 0 16px;">' +
+        '<div style="background:linear-gradient(135deg,#6C8EF5,#B97FF5);' +
+        'width:40px;height:40px;min-width:40px;border-radius:12px;' +
+        'display:flex;align-items:center;justify-content:center;' +
+        'font-size:20px;box-shadow:0 4px 12px rgba(108,142,245,0.30);">🔬</div>' +
+        '<div><div style="font-size:15px;font-weight:900;color:#2D3250;line-height:1.2;">Dataset Analyzer</div>' +
+        '<div style="font-size:11px;color:#8A93B2;font-weight:600;">by Nirupam Das</div></div></div>',
+        unsafe_allow_html=True
+    )
 
-    st.markdown("---")
+    st.divider()
+
     st.markdown("**⚙️ Options**")
-
     run_ml = st.checkbox("Run ML Analysis", value=True)
-
     target_col_input = st.text_input(
         "ML Target Column",
         placeholder="Auto-detected if blank",
         help="Leave blank to auto-detect. Must match a column name exactly."
     )
 
-    st.markdown("---")
-    st.markdown("""
-    <div style="font-size:11px;color:#8A93B2;line-height:1.7;">
-    <b>What this tool does:</b><br>
-    📊 Dataset overview<br>
-    🔍 Data quality checks<br>
-    📈 Feature distributions<br>
-    🔗 Correlation analysis<br>
-    🏷️ Categorical analysis<br>
-    🤖 ML insights (optional)<br>
-    💡 Auto-generated insights<br>
-    📄 Downloadable HTML report
-    </div>
-    """, unsafe_allow_html=True)
+    st.divider()
 
-    st.markdown("---")
-    st.markdown(
-        '<div style="font-size:10px;color:#8A93B2;">Upload a CSV to get started</div>',
-        unsafe_allow_html=True
-    )
+    # Feature list
+    st.caption("**What this tool does:**")
+    st.caption("📊 Dataset overview")
+    st.caption("🔍 Data quality checks")
+    st.caption("📈 Feature distributions")
+    st.caption("🔗 Correlation analysis")
+    st.caption("🏷️ Categorical analysis")
+    st.caption("🤖 ML insights (optional)")
+    st.caption("💡 Auto-generated insights")
+    st.caption("📄 Downloadable HTML report")
+
+    st.divider()
+    st.caption("Upload a CSV to get started")
 
 
-# ═════════════════════════════════════════════════════════════════════════════
 # Landing / Upload
 # ═════════════════════════════════════════════════════════════════════════════
 
@@ -406,7 +385,6 @@ uploaded_file = st.file_uploader(
     label_visibility="collapsed",
 )
 
-# ── If nothing uploaded, show hero ───────────────────────────────────────────
 if uploaded_file is None:
     st.markdown("""
     <div class="upload-hero">
@@ -425,11 +403,10 @@ if uploaded_file is None:
     st.stop()
 
 
-# ═════════════════════════════════════════════════════════════════════════════
-# Main analysis (runs when file is uploaded)
+# Main analysis
 # ═════════════════════════════════════════════════════════════════════════════
 
-# ── Load data & analysis (cached) ────────────────────────────────────────────
+# Load data & analysis (cached)
 file_bytes = uploaded_file.getvalue()
 dataset_name = os.path.splitext(uploaded_file.name)[0].replace('_',' ').replace('-',' ').title()
 
@@ -443,7 +420,7 @@ with st.spinner("Loading and analysing dataset..."):
 
 ov = analysis['overview']
 
-# ── KPI row ───────────────────────────────────────────────────────────────────
+# KPI row
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
@@ -480,7 +457,6 @@ with c4:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════════════════════════════════════
 # Tabs
 # ══════════════════════════════════════════════════════════════════════════════
 tabs = st.tabs([
@@ -494,7 +470,6 @@ tabs = st.tabs([
     "📄 Download Report",
 ])
 
-# ─────────────────────────────────────────────────────────────────────────────
 # TAB 1 — Overview
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[0]:
@@ -520,7 +495,6 @@ with tabs[0]:
     st.dataframe(df.head(20))
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # TAB 2 — Data Quality
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[1]:
@@ -583,7 +557,6 @@ with tabs[1]:
                     st.image(os.path.join(tmpdir, out_path.split('/')[-1]))
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # TAB 3 — Distributions
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[2]:
@@ -639,8 +612,6 @@ with tabs[2]:
         s4.metric("Min",    f"{data.min():.2f}")
         s5.metric("Max",    f"{data.max():.2f}")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
 # TAB 4 — Correlations
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[3]:
@@ -683,8 +654,6 @@ with tabs[3]:
             sc_df = pd.DataFrame(strong, columns=['Column A', 'Column B', 'Correlation'])
             st.dataframe(sc_df, hide_index=True)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
 # TAB 5 — Categorical
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[4]:
@@ -744,8 +713,6 @@ with tabs[4]:
         # Unique count
         st.caption(f"Unique values in **{selected_cat}**: {df[selected_cat].nunique()}")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
 # TAB 6 — ML Insights
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[5]:
@@ -857,8 +824,6 @@ with tabs[5]:
                         st.pyplot(fig)
                         plt.close(fig)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
 # TAB 7 — Insights
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[6]:
@@ -877,8 +842,6 @@ with tabs[6]:
           <div>{insight}</div>
         </div>""", unsafe_allow_html=True)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
 # TAB 8 — Download Report
 # ─────────────────────────────────────────────────────────────────────────────
 with tabs[7]:
@@ -964,7 +927,7 @@ with tabs[7]:
     """, unsafe_allow_html=True)
 
 
-# ── Footer ────────────────────────────────────────────────────────────────────
+# Footer
 st.markdown("""
 <div style="margin-top:48px;padding-top:20px;border-top:1.5px solid #DDE3F7;
             text-align:center;font-size:11px;color:#8A93B2;font-weight:500;">
