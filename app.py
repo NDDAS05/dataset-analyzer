@@ -25,6 +25,33 @@ from visualizer       import (generate_visualizations, plot_feature_importance,
 from ml_insights      import run_ml_analysis
 from report_generator import generate_report
 
+# ── Cached heavy functions ────────────────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def cached_load(file_bytes: bytes, filename: str) -> pd.DataFrame:
+    """Load and cache DataFrame — only re-runs when file actually changes."""
+    import io as _io
+    encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
+    for enc in encodings:
+        try:
+            df = pd.read_csv(_io.BytesIO(file_bytes), encoding=enc, on_bad_lines='skip')
+            if not df.empty and len(df.columns) >= 2:
+                return df.dropna(how='all')
+        except Exception:
+            continue
+    raise ValueError("Could not parse the file. Please check it is a valid CSV.")
+
+@st.cache_data(show_spinner=False)
+def cached_analyze(file_bytes: bytes) -> dict:
+    """Cache EDA analysis — only re-runs when file changes."""
+    df = cached_load(file_bytes, "")
+    return analyze_dataset(df)
+
+@st.cache_data(show_spinner=False)
+def cached_ml(file_bytes: bytes, target: str) -> dict:
+    """Cache ML result — only re-runs when file or target changes."""
+    df = cached_load(file_bytes, "")
+    return run_ml_analysis(df, target)
+
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title  = "Dataset Analyzer · Nirupam Das",
@@ -36,30 +63,142 @@ st.set_page_config(
 # ── Custom CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;500;600;700&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Nunito', sans-serif;
+/* ── Base & fonts ─────────────────────────────────────────── */
+html, body, [class*="css"],
+[data-testid="stAppViewContainer"],
+[data-testid="stMarkdownContainer"],
+p, span, div, label, h1, h2, h3 {
+    font-family: 'Nunito Sans', sans-serif !important;
+    color: #2D3250;
 }
 
-/* Main background */
-.stApp { background: #F4F6FF; }
+/* ── App background ───────────────────────────────────────── */
+.stApp,
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="block-container"] {
+    background-color: #F4F6FF !important;
+}
 
-/* Hide default streamlit footer & header */
-#MainMenu { visibility: hidden; }
-footer    { visibility: hidden; }
-header    { visibility: hidden; }
+/* ── Hide Streamlit chrome ────────────────────────────────── */
+#MainMenu, footer, header { visibility: hidden; }
+[data-testid="stToolbar"]  { display: none; }
+[data-testid="stDecoration"]{ display: none; }
 
-/* Sidebar */
+/* ── Sidebar — no horizontal scroll ──────────────────────── */
 [data-testid="stSidebar"] {
-    background: #FFFFFF;
-    border-right: 1.5px solid #DDE3F7;
+    background-color: #FFFFFF !important;
+    border-right: 1.5px solid #DDE3F7 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
-[data-testid="stSidebar"] * { font-family: 'Nunito', sans-serif !important; }
+[data-testid="stSidebar"] > div:first-child {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    max-width: 100% !important;
+}
+[data-testid="stSidebar"] * {
+    font-family: 'Nunito Sans', sans-serif !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+/* Sidebar text inputs */
+[data-testid="stSidebar"] input {
+    background: #F4F6FF !important;
+    color: #2D3250 !important;
+    border: 1.5px solid #DDE3F7 !important;
+    border-radius: 8px !important;
+}
+/* Sidebar labels and markdown text */
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div {
+    color: #2D3250 !important;
+}
+[data-testid="stSidebar"] .stMarkdown p { color: #525B84 !important; }
 
-/* Cards */
+/* ── Streamlit native widgets — force readable text ───────── */
+/* All markdown text */
+.stMarkdown p, .stMarkdown span, .stMarkdown li { color: #2D3250 !important; }
+.stMarkdown h1, .stMarkdown h2, .stMarkdown h3  { color: #2D3250 !important; }
+
+/* st.metric labels & values */
+[data-testid="stMetric"] label { color: #8A93B2 !important; font-size: 12px !important; }
+[data-testid="stMetric"] [data-testid="stMetricValue"] { color: #2D3250 !important; font-weight: 800 !important; }
+
+/* st.tabs */
+[data-testid="stTabs"] [role="tab"] {
+    color: #525B84 !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+}
+[data-testid="stTabs"] [role="tab"][aria-selected="true"] {
+    color: #6C8EF5 !important;
+    border-bottom-color: #6C8EF5 !important;
+}
+[data-testid="stTabs"] { overflow-x: auto !important; }
+
+/* st.selectbox */
+[data-testid="stSelectbox"] label { color: #2D3250 !important; font-weight: 700 !important; }
+[data-testid="stSelectbox"] > div > div {
+    background: #FFFFFF !important;
+    border: 1.5px solid #DDE3F7 !important;
+    border-radius: 10px !important;
+    color: #2D3250 !important;
+}
+
+/* st.checkbox */
+[data-testid="stCheckbox"] span { color: #2D3250 !important; font-weight: 600 !important; }
+
+/* st.text_input */
+[data-testid="stTextInput"] label { color: #2D3250 !important; font-weight: 700 !important; }
+[data-testid="stTextInput"] input {
+    background: #FFFFFF !important;
+    color: #2D3250 !important;
+    border: 1.5px solid #DDE3F7 !important;
+    border-radius: 10px !important;
+}
+
+/* st.file_uploader */
+[data-testid="stFileUploader"] label { color: #2D3250 !important; }
+[data-testid="stFileUploaderDropzone"] {
+    background: #FFFFFF !important;
+    border: 2px dashed #C4D4FC !important;
+    border-radius: 16px !important;
+}
+[data-testid="stFileUploaderDropzone"] p,
+[data-testid="stFileUploaderDropzone"] span { color: #8A93B2 !important; }
+
+/* st.dataframe */
+[data-testid="stDataFrame"] { border-radius: 12px !important; overflow: hidden !important; }
+
+/* st.spinner */
+[data-testid="stSpinner"] p { color: #6C8EF5 !important; }
+
+/* Download button */
+[data-testid="stDownloadButton"] button {
+    background: linear-gradient(135deg, #6C8EF5, #B97FF5) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+    font-size: 15px !important;
+    padding: 14px 32px !important;
+    width: 100% !important;
+    box-shadow: 0 4px 16px rgba(108,142,245,0.35) !important;
+}
+
+/* st.success / st.info / st.error */
+[data-testid="stAlert"] p { color: #2D3250 !important; }
+
+/* ── Custom component classes ─────────────────────────────── */
 .stat-card {
-    background: white;
+    background: #FFFFFF;
     border: 1.5px solid #DDE3F7;
     border-radius: 16px;
     padding: 20px 18px;
@@ -68,101 +207,89 @@ header    { visibility: hidden; }
     margin-bottom: 8px;
 }
 .stat-label {
-    font-size: 11px; font-weight: 700;
+    font-size: 11px !important; font-weight: 700 !important;
     text-transform: uppercase; letter-spacing: 0.08em;
-    color: #8A93B2; margin-bottom: 6px;
+    color: #8A93B2 !important; margin-bottom: 6px;
 }
 .stat-value {
-    font-size: 28px; font-weight: 900;
+    font-size: 28px !important; font-weight: 900 !important;
     line-height: 1; margin-bottom: 4px;
 }
-.stat-sub { font-size: 11px; color: #8A93B2; font-weight: 500; }
+.stat-sub { font-size: 11px !important; color: #8A93B2 !important; font-weight: 500 !important; }
 
-.blue-val   { color: #6C8EF5; }
-.coral-val  { color: #F4845F; }
-.green-val  { color: #52C17E; }
-.purple-val { color: #B97FF5; }
+.blue-val   { color: #6C8EF5 !important; }
+.coral-val  { color: #F4845F !important; }
+.green-val  { color: #52C17E !important; }
+.purple-val { color: #B97FF5 !important; }
 
-/* Section headers */
 .section-title {
     font-size: 20px; font-weight: 800;
-    color: #2D3250; margin-bottom: 4px;
+    color: #2D3250 !important; margin-bottom: 4px;
 }
 .section-sub {
-    font-size: 12px; color: #8A93B2;
+    font-size: 12px; color: #8A93B2 !important;
     font-weight: 500; margin-bottom: 20px;
 }
 
-/* Insight items */
 .insight-box {
-    background: white;
+    background: #FFFFFF;
     border: 1.5px solid #DDE3F7;
     border-radius: 14px;
     padding: 14px 18px;
     margin-bottom: 10px;
     display: flex; align-items: flex-start; gap: 14px;
     box-shadow: 0 2px 8px rgba(108,142,245,0.08);
-    font-size: 14px; color: #2D3250;
+    font-size: 14px;
 }
+.insight-box, .insight-box * { color: #2D3250 !important; }
 .insight-num {
     background: linear-gradient(135deg, #6C8EF5, #B97FF5);
-    color: white; border-radius: 8px;
+    color: white !important; border-radius: 8px;
     width: 26px; height: 26px; min-width: 26px;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 900;
+    flex-shrink: 0;
 }
 
-/* Download button */
-.dl-btn {
-    background: linear-gradient(135deg, #6C8EF5, #B97FF5);
-    color: white; border: none;
-    padding: 14px 32px; border-radius: 12px;
-    font-size: 15px; font-weight: 800;
-    cursor: pointer; width: 100%;
-    font-family: 'Nunito', sans-serif;
-    box-shadow: 0 4px 16px rgba(108,142,245,0.35);
-}
-
-/* Upload area */
 .upload-hero {
-    background: white;
+    background: #FFFFFF;
     border: 2px dashed #C4D4FC;
     border-radius: 20px;
     padding: 48px 32px;
     text-align: center;
     margin: 32px 0;
 }
-.upload-hero h2 {
-    font-size: 22px; font-weight: 800;
-    color: #2D3250; margin-bottom: 8px;
-}
-.upload-hero p { color: #8A93B2; font-size: 14px; }
+.upload-hero h2 { font-size: 22px; font-weight: 800; color: #2D3250 !important; margin-bottom: 8px; }
+.upload-hero p  { color: #8A93B2 !important; font-size: 14px; }
 
-/* Metric pill */
-.metric-pill {
-    background: white;
-    border: 1.5px solid #DDE3F7;
-    border-radius: 12px;
-    padding: 16px 20px; text-align: center;
-    box-shadow: 0 2px 8px rgba(108,142,245,0.08);
+.pill-num {
+    background: #EEF2FF; color: #6C8EF5 !important;
+    border: 1.5px solid #C4D4FC; border-radius: 20px;
+    padding: 4px 12px; font-size: 12px;
+    font-weight: 700; display: inline-block; margin: 3px;
 }
-.metric-pill-label {
-    font-size: 10px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.09em;
-    color: #8A93B2; margin-bottom: 6px;
-}
-.metric-pill-value {
-    font-size: 26px; font-weight: 900;
-    color: #52C17E;
+.pill-cat {
+    background: #F6EEFF; color: #B97FF5 !important;
+    border: 1.5px solid #DEC8FA; border-radius: 20px;
+    padding: 4px 12px; font-size: 12px;
+    font-weight: 700; display: inline-block; margin: 3px;
 }
 
-/* Pill tags */
-.pill-num    { background:#EEF2FF; color:#6C8EF5; border:1.5px solid #C4D4FC;
-               border-radius:20px; padding:4px 12px; font-size:12px;
-               font-weight:700; display:inline-block; margin:3px; }
-.pill-cat    { background:#F6EEFF; color:#B97FF5; border:1.5px solid #DEC8FA;
-               border-radius:20px; padding:4px 12px; font-size:12px;
-               font-weight:700; display:inline-block; margin:3px; }
+/* ── Mobile responsiveness ────────────────────────────────── */
+@media (max-width: 768px) {
+    [data-testid="stSidebar"] { display: none !important; }
+    [data-testid="block-container"] { padding: 1rem !important; }
+    .stat-card { padding: 14px 12px; }
+    .stat-value { font-size: 22px !important; }
+    .upload-hero { padding: 28px 16px; }
+    .upload-hero h2 { font-size: 18px; }
+    [data-testid="stTabs"] [role="tab"] { font-size: 11px !important; padding: 6px 8px !important; }
+    .insight-box { padding: 12px 14px; font-size: 13px; }
+}
+@media (max-width: 480px) {
+    [data-testid="block-container"] { padding: 0.5rem !important; }
+    .stat-value { font-size: 18px !important; }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -302,19 +429,17 @@ if uploaded_file is None:
 # Main analysis (runs when file is uploaded)
 # ═════════════════════════════════════════════════════════════════════════════
 
-# ── Load data ─────────────────────────────────────────────────────────────────
-with st.spinner("Loading dataset..."):
+# ── Load data & analysis (cached) ────────────────────────────────────────────
+file_bytes = uploaded_file.getvalue()
+dataset_name = os.path.splitext(uploaded_file.name)[0].replace('_',' ').replace('-',' ').title()
+
+with st.spinner("Loading and analysing dataset..."):
     try:
-        df = load_from_upload(uploaded_file)
+        df       = cached_load(file_bytes, uploaded_file.name)
+        analysis = cached_analyze(file_bytes)
     except Exception as e:
         st.error(f"❌ Could not load file: {e}")
         st.stop()
-
-dataset_name = os.path.splitext(uploaded_file.name)[0].replace('_',' ').replace('-',' ').title()
-
-# ── Run analysis ──────────────────────────────────────────────────────────────
-with st.spinner("Analysing dataset..."):
-    analysis = analyze_dataset(df)
 
 ov = analysis['overview']
 
@@ -389,11 +514,10 @@ with tabs[0]:
         st.markdown("**Descriptive Statistics**")
         st.dataframe(
             df[ov['numeric_columns']].describe().round(3).T,
-            use_container_width=True,
         )
 
     st.markdown("**Data Preview**")
-    st.dataframe(df.head(20), use_container_width=True)
+    st.dataframe(df.head(20))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -424,7 +548,7 @@ with tabs[1]:
                  'Severity': 'High' if v['missing_pct']>50 else 'Medium' if v['missing_pct']>20 else 'Low'}
                 for c, v in mv.items()
             ])
-            st.dataframe(mv_df, use_container_width=True, hide_index=True)
+            st.dataframe(mv_df, hide_index=True)
         else:
             st.success("✅ No missing values!")
 
@@ -436,7 +560,7 @@ with tabs[1]:
                  'Lower': v['lower_bound'], 'Upper': v['upper_bound']}
                 for c, v in out.items()
             ])
-            st.dataframe(out_df, use_container_width=True, hide_index=True)
+            st.dataframe(out_df, hide_index=True)
         else:
             st.success("✅ No outliers detected!")
 
@@ -453,12 +577,10 @@ with tabs[1]:
             ca, cb = st.columns(2)
             if mv_path:
                 with ca:
-                    st.image(os.path.join(tmpdir, mv_path.split('/')[-1]),
-                             use_container_width=True)
+                    st.image(os.path.join(tmpdir, mv_path.split('/')[-1]))
             if out_path:
                 with cb:
-                    st.image(os.path.join(tmpdir, out_path.split('/')[-1]),
-                             use_container_width=True)
+                    st.image(os.path.join(tmpdir, out_path.split('/')[-1]))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -506,7 +628,7 @@ with tabs[2]:
             ax.grid(True, color='#E8ECF8', linewidth=0.8, zorder=0)
             ax.tick_params(colors='#8A93B2')
             fig.tight_layout()
-            st.pyplot(fig, use_container_width=True)
+            st.pyplot(fig)
             plt.close(fig)
 
         # Quick stats row
@@ -552,14 +674,14 @@ with tabs[3]:
             ax.set_facecolor('#FFFFFF')
             fig.patch.set_facecolor('#FAFBFF')
             fig.tight_layout()
-            st.pyplot(fig, use_container_width=True)
+            st.pyplot(fig)
             plt.close(fig)
 
         strong = analysis.get('strong_correlations', [])
         if strong:
             st.markdown("**Strong correlations (|r| ≥ 0.70)**")
             sc_df = pd.DataFrame(strong, columns=['Column A', 'Column B', 'Correlation'])
-            st.dataframe(sc_df, use_container_width=True, hide_index=True)
+            st.dataframe(sc_df, hide_index=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -616,7 +738,7 @@ with tabs[4]:
             ax.grid(True, color='#E8ECF8', linewidth=0.8, zorder=0)
             ax.tick_params(colors='#8A93B2')
             fig.tight_layout()
-            st.pyplot(fig, use_container_width=True)
+            st.pyplot(fig)
             plt.close(fig)
 
         # Unique count
@@ -638,12 +760,17 @@ with tabs[5]:
                   else detect_target_column(df))
 
         if target not in df.columns:
-            st.error(f"Column **{target}** not found in dataset. Check the target column name.")
+            st.error(f"Column **{target}** not found. Check the target column name in the sidebar.")
         else:
             st.caption(f"Target column: **{target}**")
+            if st.button("🤖 Run ML Analysis", key="run_ml_btn", use_container_width=False):
+                st.session_state["ml_result"] = cached_ml(file_bytes, target)
+                st.session_state["ml_target"] = target
 
-            with st.spinner(f"Training Random Forest on '{target}'..."):
-                ml = run_ml_analysis(df, target)
+            ml = st.session_state.get("ml_result")
+            if ml is None:
+                st.info("Click **Run ML Analysis** above to train a Random Forest on this dataset.")
+                st.stop()
 
             if not ml.get('success'):
                 st.error(f"ML failed: {ml.get('error', 'Unknown error')}")
@@ -674,7 +801,7 @@ with tabs[5]:
                     st.markdown("**Feature Importance**")
                     if ml.get('feature_importances'):
                         fi_df = pd.DataFrame(ml['feature_importances'])
-                        st.dataframe(fi_df, use_container_width=True, hide_index=True)
+                        st.dataframe(fi_df, hide_index=True)
 
                         import matplotlib
                         matplotlib.use('Agg')
@@ -699,7 +826,7 @@ with tabs[5]:
                         ax.grid(True, color='#E8ECF8', linewidth=0.8, zorder=0)
                         ax.tick_params(colors='#8A93B2')
                         fig.tight_layout()
-                        st.pyplot(fig, use_container_width=True)
+                        st.pyplot(fig)
                         plt.close(fig)
 
                 with col_cm:
@@ -727,7 +854,7 @@ with tabs[5]:
                         ax.set_facecolor('#FFFFFF')
                         fig.patch.set_facecolor('#FAFBFF')
                         fig.tight_layout()
-                        st.pyplot(fig, use_container_width=True)
+                        st.pyplot(fig)
                         plt.close(fig)
 
 
@@ -762,62 +889,70 @@ with tabs[7]:
         unsafe_allow_html=True
     )
 
-    with st.spinner("Building report..."):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # 1. Ensure _assets dir exists before anything writes there
-            assets_dir = os.path.join(tmpdir, '_assets')
-            os.makedirs(assets_dir, exist_ok=True)
+    if st.button("⚙️ Generate Report", key="gen_report_btn", use_container_width=False):
+        st.session_state["report_bytes"]    = None
+        st.session_state["report_filename"] = None
+        with st.spinner("Building report — this may take a moment..."):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # 1. Ensure _assets dir exists before anything writes there
+                assets_dir = os.path.join(tmpdir, '_assets')
+                os.makedirs(assets_dir, exist_ok=True)
 
-            # 2. Generate all EDA charts (writes into _assets/)
-            chart_paths_report = generate_visualizations(df, analysis, tmpdir)
+                # 2. Generate all EDA charts (writes into _assets/)
+                chart_paths_report = generate_visualizations(df, analysis, tmpdir)
 
-            # 3. Run ML and generate ML-specific charts
-            ml_results = {'skipped': True}
-            if run_ml:
-                target = (target_col_input.strip()
-                          if target_col_input.strip()
-                          else detect_target_column(df))
-                if target in df.columns:
-                    ml_results = run_ml_analysis(df, target)
-                    if ml_results.get('success'):
-                        if ml_results.get('feature_importances'):
-                            fi = plot_feature_importance(
-                                ml_results['feature_importances'],
-                                assets_dir)
-                            if fi:
-                                chart_paths_report['feature_importance'] = fi
-                        if ml_results.get('confusion_matrix'):
-                            cm = plot_confusion_matrix(
-                                ml_results['confusion_matrix'],
-                                ml_results.get('confusion_matrix_labels', []),
-                                assets_dir)
-                            if cm:
-                                chart_paths_report['confusion_matrix'] = cm
+                # 3. Run ML and generate ML-specific charts
+                ml_results = {'skipped': True}
+                if run_ml:
+                    target = (target_col_input.strip()
+                              if target_col_input.strip()
+                              else detect_target_column(df))
+                    if target in df.columns:
+                        ml_results = cached_ml(file_bytes, target)
+                        if ml_results.get('success'):
+                            if ml_results.get('feature_importances'):
+                                fi = plot_feature_importance(
+                                    ml_results['feature_importances'],
+                                    assets_dir)
+                                if fi:
+                                    chart_paths_report['feature_importance'] = fi
+                            if ml_results.get('confusion_matrix'):
+                                cm = plot_confusion_matrix(
+                                    ml_results['confusion_matrix'],
+                                    ml_results.get('confusion_matrix_labels', []),
+                                    assets_dir)
+                                if cm:
+                                    chart_paths_report['confusion_matrix'] = cm
 
-            # 4. Generate insights
-            insights_report = generate_insights(analysis, ml_results)
+                # 4. Generate insights
+                insights_report = generate_insights(analysis, ml_results)
 
-            # 5. Render HTML report
-            report_path = generate_report(
-                df           = df,
-                analysis     = analysis,
-                chart_paths  = chart_paths_report,
-                ml_results   = ml_results,
-                insights     = insights_report,
-                output_dir   = tmpdir,
-                dataset_name = dataset_name,
-            )
+                # 5. Render HTML report
+                report_path = generate_report(
+                    df           = df,
+                    analysis     = analysis,
+                    chart_paths  = chart_paths_report,
+                    ml_results   = ml_results,
+                    insights     = insights_report,
+                    output_dir   = tmpdir,
+                    dataset_name = dataset_name,
+                )
 
-            with open(report_path, 'rb') as f:
-                report_bytes = f.read()
+                with open(report_path, 'rb') as f:
+                    report_bytes = f.read()
 
-    st.download_button(
-        label     = "⬇️  Download HTML Report",
-        data      = report_bytes,
-        file_name = f"{dataset_name.replace(' ','_')}_report.html",
-        mime      = "text/html",
-        use_container_width = True,
-    )
+        st.session_state["report_bytes"]    = report_bytes
+        st.session_state["report_filename"] = f"{dataset_name.replace(' ','_')}_report.html"
+
+    if st.session_state.get("report_bytes"):
+        st.download_button(
+            label     = "⬇️  Download HTML Report",
+            data      = st.session_state["report_bytes"],
+            file_name = st.session_state["report_filename"],
+            mime      = "text/html",
+        )
+    else:
+        st.info("Click **Generate Report** above to build your downloadable report.")
 
     st.markdown("""
     <div style="background:white;border:1.5px solid #DDE3F7;border-radius:14px;
